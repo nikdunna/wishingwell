@@ -6,6 +6,22 @@ name = "pypi"
 [packages]
 nltk = "*"
 gensim = "*"
+pyldavis = "*"
+fastapi = "*"
+uvicorn = {extras = ["standard"], version = "*"}
+pydantic = "*"
+sqlalchemy = "*"
+psycopg2-binary = "*"
+alembic = "*"
+bertopic = "*"
+sentence-transformers = "*"
+umap-learn = "*"
+hdbscan = "*"
+scikit-learn = "*"
+openai = "*"
+apscheduler = "*"
+python-dotenv = "*"
+python-multipart = "*"
 
 [dev-packages]
 

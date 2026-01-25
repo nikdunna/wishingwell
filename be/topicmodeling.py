@@ -1,13 +1,15 @@
 import string
 import nltk
 nltk.download('stopwords')
-nltk.download('wordnet')  
-nltk.download('omw-1.4')  
+nltk.download('wordnet')
+nltk.download('omw-1.4')
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 from gensim import corpora
 from gensim.models import LsiModel
 from gensim.models import LdaModel
+import pyLDAvis
+import pyLDAvis.gensim_models as gensimvis
 
 doc_1 = "I wish for the ability to speak and understand every language in the world fluently."
 
@@ -65,3 +67,39 @@ lda = LdaModel(doc_term_matrix, num_topics=3, id2word = dictionary)
 # Results
 print("LDA MODEL RESULTS:")
 print(lda.print_topics(num_topics=3, num_words=3))
+
+
+# pyLDAvis visualization
+print("\n" + "="*50)
+print("PREPARING PYLDAVIS VISUALIZATION...")
+print("="*50)
+
+# Prepare the visualization data
+vis_data = gensimvis.prepare(lda, doc_term_matrix, dictionary)
+
+# Save visualization to HTML file
+output_file = 'lda_visualization.html'
+pyLDAvis.save_html(vis_data, output_file)
+print(f"\n✓ Visualization saved to: {output_file}")
+print("  Open this file in your web browser to explore the LDA topics interactively.")
+
+# Display topic-word associations for reference
+print("\n" + "="*50)
+print("TOPIC INTERPRETATION (Top 10 words per topic)")
+print("="*50)
+for idx, topic in lda.print_topics(num_topics=3, num_words=10):
+    print(f"\nTopic {idx}:")
+    words = [word.split('*')[1].replace('"', '') for word in topic.split(' + ')]
+    for i, word in enumerate(words, 1):
+        print(f"  {i}. {word}")
+
+# Document-topic dominance analysis
+print("\n" + "="*50)
+print("DOCUMENT-TOPIC DOMINANCE")
+print("="*50)
+for i, doc in enumerate(doc_term_matrix, 1):
+    doc_topics = lda.get_document_topics(doc, minimum_probability=0.0)
+    sorted_topics = sorted(doc_topics, key=lambda x: x[1], reverse=True)
+    dominant_topic = sorted_topics[0]
+    print(f"Doc {i}: Dominant Topic {dominant_topic[0]} ({dominant_topic[1]:.3f})")
+    print(f"  Text: {corpus[i-1][:80]}...")
