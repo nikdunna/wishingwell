@@ -1,0 +1,33 @@
+# Use Python 3.12 slim image
+FROM python:3.12-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Pipfile and install dependencies
+COPY Pipfile Pipfile.lock ./
+RUN pip install --no-cache-dir pipenv && \
+    pipenv install --system --deploy
+
+# Copy application code
+COPY . .
+
+# Create directory for models cache (sentence-transformers downloads models here)
+RUN mkdir -p /root/.cache/torch/sentence_transformers
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:8000/health')"
+
+# Run the application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
